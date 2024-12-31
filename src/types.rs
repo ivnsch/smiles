@@ -1,4 +1,7 @@
-use petgraph::{graph::NodeIndex, Graph};
+use petgraph::{
+    graph::{EdgeIndex, NodeIndex},
+    Graph,
+};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Atom {
@@ -27,5 +30,9 @@ impl Mol {
 
     pub fn atom_with_idx(&self, idx: usize) -> Option<&Atom> {
         self.graph.node_weight(NodeIndex::new(idx))
+    }
+
+    pub fn bond_with_idx(&self, idx: usize) -> Option<&Bond> {
+        self.graph.edge_weight(EdgeIndex::new(idx))
     }
 }
