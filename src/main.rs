@@ -22,6 +22,8 @@ impl SmilesParser {
         // let mut ring_start: Option<NodeIndex> = None;
         let mut rings: HashMap<char, NodeIndex> = HashMap::new();
 
+        let mut branches_stack: Vec<NodeIndex> = vec![];
+
         while !scanner.is_done() {
             let c = scanner.pop();
 
@@ -50,6 +52,14 @@ impl SmilesParser {
                             graph.add_edge(*ring_start, ring_end, bond);
                             rings.remove(c);
                         }
+                    }
+                    '(' => {
+                        branches_stack.push(last_node_index.unwrap()); // unwrap: smiles can't start with a branch (there's always a last node)
+                    }
+                    ')' => {
+                        let last_index_before_branch = branches_stack.pop();
+                        // replace current last node index (in branch) with index before branch
+                        last_node_index = last_index_before_branch;
                     }
                     _ => {}
                 }
@@ -275,6 +285,41 @@ mod test {
                 atom_end: 11
             }),
             mol.bond_with_idx(12)
+        );
+    }
+
+    #[test]
+    fn parse_fluoroform() {
+        let parser = SmilesParser {};
+        let mol = parser.parse("fc(f)f");
+
+        assert_eq!(4, mol.num_atoms());
+        assert_eq!(3, mol.num_bonds());
+        assert_eq!(Some(&Atom { number: 9 }), mol.atom_with_idx(0));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(1));
+        assert_eq!(Some(&Atom { number: 9 }), mol.atom_with_idx(2));
+        assert_eq!(Some(&Atom { number: 9 }), mol.atom_with_idx(3));
+
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 0,
+                atom_end: 1
+            }),
+            mol.bond_with_idx(0)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 1,
+                atom_end: 2
+            }),
+            mol.bond_with_idx(1)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 1,
+                atom_end: 3
+            }),
+            mol.bond_with_idx(2)
         );
     }
 }
