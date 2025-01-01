@@ -29,12 +29,9 @@ impl SmilesParser {
 
             if let Some(c) = c {
                 match &c {
-                    'c' => {
-                        let node_index = add_to_graph(&mut graph, 6, last_node_index);
-                        last_node_index = Some(node_index.clone());
-                    }
-                    'f' => {
-                        let node_index = add_to_graph(&mut graph, 9, last_node_index);
+                    'c' | 'f' => {
+                        let number = atom_number(c);
+                        let node_index = add_to_graph(&mut graph, number, last_node_index);
                         last_node_index = Some(node_index.clone());
                     }
                     '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
@@ -69,6 +66,14 @@ impl SmilesParser {
         let mol = Mol { graph };
 
         mol
+    }
+}
+
+fn atom_number(char: &char) -> u32 {
+    match char {
+        'c' => 6,
+        'f' => 9,
+        _ => panic!("not supported: {}", char),
     }
 }
 
