@@ -28,15 +28,11 @@ impl SmilesParser {
             if let Some(c) = c {
                 match &c {
                     'c' => {
-                        let atom: Atom = Atom { number: 6 };
-                        let node_index = graph.add_node(atom);
-                        if let Some(last) = last_node_index {
-                            let bond = Bond {
-                                atom_start: last.index(),
-                                atom_end: node_index.index(),
-                            };
-                            graph.add_edge(last, node_index, bond);
-                        }
+                        let node_index = add_to_graph(&mut graph, 6, last_node_index);
+                        last_node_index = Some(node_index.clone());
+                    }
+                    'f' => {
+                        let node_index = add_to_graph(&mut graph, 9, last_node_index);
                         last_node_index = Some(node_index.clone());
                     }
                     '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
@@ -64,6 +60,25 @@ impl SmilesParser {
 
         mol
     }
+}
+
+fn add_to_graph(
+    graph: &mut Graph<Atom, Bond>,
+    atom_number: u32,
+    last_node_index: Option<NodeIndex>,
+) -> NodeIndex {
+    let atom: Atom = Atom {
+        number: atom_number,
+    };
+    let node_index = graph.add_node(atom);
+    if let Some(last) = last_node_index {
+        let bond = Bond {
+            atom_start: last.index(),
+            atom_end: node_index.index(),
+        };
+        graph.add_edge(last, node_index, bond);
+    }
+    node_index
 }
 
 pub fn string(string: &str) -> bool {
