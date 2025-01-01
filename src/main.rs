@@ -18,8 +18,6 @@ impl SmilesParser {
 
         let mut last_node_index: Option<NodeIndex> = None;
 
-        // let mut is_in_ring = false;
-        // let mut ring_start: Option<NodeIndex> = None;
         let mut rings: HashMap<char, NodeIndex> = HashMap::new();
 
         let mut branches_stack: Vec<NodeIndex> = vec![];
@@ -29,8 +27,24 @@ impl SmilesParser {
 
             if let Some(c) = c {
                 match &c {
-                    'c' | 'n' | 'o' | 'f' => {
-                        let number = atom_number(c);
+                    'c' => {
+                        let atom_str;
+                        if let Some(next) = scanner.peek() {
+                            if *next == 'l' {
+                                atom_str = "cl";
+                                scanner.pop();
+                            } else {
+                                atom_str = "c";
+                            }
+                        } else {
+                            atom_str = "c";
+                        }
+                        let number = atom_number(&atom_str);
+                        let node_index = add_to_graph(&mut graph, number, last_node_index);
+                        last_node_index = Some(node_index.clone());
+                    }
+                    'n' | 'o' | 'f' => {
+                        let number = atom_number(&c.to_string());
                         let node_index = add_to_graph(&mut graph, number, last_node_index);
                         last_node_index = Some(node_index.clone());
                     }
@@ -69,13 +83,14 @@ impl SmilesParser {
     }
 }
 
-fn atom_number(char: &char) -> u32 {
-    match char {
-        'c' => 6,
-        'n' => 7,
-        'o' => 8,
-        'f' => 9,
-        _ => panic!("not supported: {}", char),
+fn atom_number(str: &str) -> u32 {
+    match str {
+        "c" => 6,
+        "n" => 7,
+        "o" => 8,
+        "f" => 9,
+        "cl" => 17,
+        _ => panic!("not supported: {}", str),
     }
 }
 
@@ -201,5 +216,41 @@ mod test {
         assert_eq!(Some(&bond(0, 1)), mol.bond_with_idx(0));
         assert_eq!(Some(&bond(1, 2)), mol.bond_with_idx(1));
         assert_eq!(Some(&bond(1, 3)), mol.bond_with_idx(2));
+    }
+
+    #[test]
+    fn parse_molecule_with_inner_cl() {
+        let parser = SmilesParser {};
+        // probably an invalid molecule, doesn't matter as we're just testing the parsing
+        let mol = parser.parse("ccclc");
+
+        assert_eq!(4, mol.num_atoms());
+        assert_eq!(3, mol.num_bonds());
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(0));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(1));
+        assert_eq!(Some(&Atom { number: 17 }), mol.atom_with_idx(2));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(3));
+
+        assert_eq!(Some(&bond(0, 1)), mol.bond_with_idx(0));
+        assert_eq!(Some(&bond(1, 2)), mol.bond_with_idx(1));
+        assert_eq!(Some(&bond(2, 3)), mol.bond_with_idx(2));
+    }
+
+    #[test]
+    fn parse_molecule_with_last_cl() {
+        let parser = SmilesParser {};
+        // probably an invalid molecule, doesn't matter as we're just testing the parsing
+        let mol = parser.parse("ccccl");
+
+        assert_eq!(4, mol.num_atoms());
+        assert_eq!(3, mol.num_bonds());
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(0));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(1));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(2));
+        assert_eq!(Some(&Atom { number: 17 }), mol.atom_with_idx(3));
+
+        assert_eq!(Some(&bond(0, 1)), mol.bond_with_idx(0));
+        assert_eq!(Some(&bond(1, 2)), mol.bond_with_idx(1));
+        assert_eq!(Some(&bond(2, 3)), mol.bond_with_idx(2));
     }
 }
