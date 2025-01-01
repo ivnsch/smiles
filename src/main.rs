@@ -121,6 +121,13 @@ mod test {
 
     use super::SmilesParser;
 
+    fn bond(atom_start: usize, atom_end: usize) -> Bond {
+        Bond {
+            atom_start,
+            atom_end,
+        }
+    }
+
     #[test]
     fn parse_ccc() {
         let parser = SmilesParser {};
@@ -144,45 +151,11 @@ mod test {
         assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(3));
         assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(4));
 
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 0,
-                atom_end: 1
-            }),
-            mol.bond_with_idx(0)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 1,
-                atom_end: 2
-            }),
-            mol.bond_with_idx(1)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 2,
-                atom_end: 3
-            }),
-            mol.bond_with_idx(2)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 3,
-                atom_end: 4
-            }),
-            mol.bond_with_idx(3)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 0,
-                atom_end: 4
-            }),
-            mol.bond_with_idx(4)
-        );
+        assert_eq!(Some(&bond(0, 1)), mol.bond_with_idx(0));
+        assert_eq!(Some(&bond(1, 2)), mol.bond_with_idx(1));
+        assert_eq!(Some(&bond(2, 3)), mol.bond_with_idx(2));
+        assert_eq!(Some(&bond(3, 4)), mol.bond_with_idx(3));
+        assert_eq!(Some(&bond(0, 4)), mol.bond_with_idx(4));
     }
 
     #[test]
@@ -198,101 +171,19 @@ mod test {
         assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(3));
         assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(4));
 
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 0,
-                atom_end: 1
-            }),
-            mol.bond_with_idx(0)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 1,
-                atom_end: 2
-            }),
-            mol.bond_with_idx(1)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 2,
-                atom_end: 3
-            }),
-            mol.bond_with_idx(2)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 3,
-                atom_end: 4
-            }),
-            mol.bond_with_idx(3)
-        );
-
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 4,
-                atom_end: 5
-            }),
-            mol.bond_with_idx(4)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 0,
-                atom_end: 5
-            }),
-            mol.bond_with_idx(5)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 5,
-                atom_end: 6
-            }),
-            mol.bond_with_idx(6)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 6,
-                atom_end: 7
-            }),
-            mol.bond_with_idx(7)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 7,
-                atom_end: 8
-            }),
-            mol.bond_with_idx(8)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 8,
-                atom_end: 9
-            }),
-            mol.bond_with_idx(9)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 9,
-                atom_end: 10
-            }),
-            mol.bond_with_idx(10)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 10,
-                atom_end: 11
-            }),
-            mol.bond_with_idx(11)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 6,
-                atom_end: 11
-            }),
-            mol.bond_with_idx(12)
-        );
+        assert_eq!(Some(&bond(0, 1)), mol.bond_with_idx(0));
+        assert_eq!(Some(&bond(1, 2)), mol.bond_with_idx(1));
+        assert_eq!(Some(&bond(2, 3)), mol.bond_with_idx(2));
+        assert_eq!(Some(&bond(3, 4)), mol.bond_with_idx(3));
+        assert_eq!(Some(&bond(4, 5)), mol.bond_with_idx(4));
+        assert_eq!(Some(&bond(0, 5)), mol.bond_with_idx(5));
+        assert_eq!(Some(&bond(5, 6)), mol.bond_with_idx(6));
+        assert_eq!(Some(&bond(6, 7)), mol.bond_with_idx(7));
+        assert_eq!(Some(&bond(7, 8)), mol.bond_with_idx(8));
+        assert_eq!(Some(&bond(8, 9)), mol.bond_with_idx(9));
+        assert_eq!(Some(&bond(9, 10)), mol.bond_with_idx(10));
+        assert_eq!(Some(&bond(10, 11)), mol.bond_with_idx(11));
+        assert_eq!(Some(&bond(6, 11)), mol.bond_with_idx(12));
     }
 
     #[test]
@@ -307,26 +198,8 @@ mod test {
         assert_eq!(Some(&Atom { number: 9 }), mol.atom_with_idx(2));
         assert_eq!(Some(&Atom { number: 9 }), mol.atom_with_idx(3));
 
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 0,
-                atom_end: 1
-            }),
-            mol.bond_with_idx(0)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 1,
-                atom_end: 2
-            }),
-            mol.bond_with_idx(1)
-        );
-        assert_eq!(
-            Some(&Bond {
-                atom_start: 1,
-                atom_end: 3
-            }),
-            mol.bond_with_idx(2)
-        );
+        assert_eq!(Some(&bond(0, 1)), mol.bond_with_idx(0));
+        assert_eq!(Some(&bond(1, 2)), mol.bond_with_idx(1));
+        assert_eq!(Some(&bond(1, 3)), mol.bond_with_idx(2));
     }
 }
