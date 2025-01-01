@@ -2,6 +2,8 @@ mod scanner;
 mod smiles;
 mod types;
 
+use std::collections::HashMap;
+
 use petgraph::{graph::NodeIndex, Graph};
 use scanner::Scanner;
 use types::{Atom, Bond, Mol};
@@ -16,8 +18,9 @@ impl SmilesParser {
 
         let mut last_node_index: Option<NodeIndex> = None;
 
-        let mut is_in_ring = false;
-        let mut ring_start: Option<NodeIndex> = None;
+        // let mut is_in_ring = false;
+        // let mut ring_start: Option<NodeIndex> = None;
+        let mut rings: HashMap<char, NodeIndex> = HashMap::new();
 
         while !scanner.is_done() {
             let c = scanner.pop();
@@ -36,19 +39,20 @@ impl SmilesParser {
                         }
                         last_node_index = Some(node_index.clone());
                     }
-                    '1' => {
-                        if !is_in_ring {
-                            ring_start = last_node_index;
-                            is_in_ring = true;
+                    '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                        if !rings.contains_key(c) {
+                            // a ring starts
+                            rings.insert(*c, last_node_index.unwrap()); // unwrap: smiles can't start with ring number (there's always a last node)
                         } else {
-                            // finishing the ring
-                            let ring_start = ring_start.unwrap(); // finishing a ring, so must have been started
-                            let last_node_index = last_node_index.unwrap(); // finishing a ring, so there must be at least a node before
+                            // ring ends
+                            let ring_start = rings.get(c).unwrap(); // unwrap: finishing a ring, so must have been started
+                            let ring_end = last_node_index.unwrap(); // unwrap: finishing a ring, so there must be at least a node before
                             let bond = Bond {
                                 atom_start: ring_start.index(),
-                                atom_end: last_node_index.index(),
+                                atom_end: ring_end.index(),
                             };
-                            graph.add_edge(ring_start, last_node_index, bond);
+                            graph.add_edge(*ring_start, ring_end, bond);
+                            rings.remove(c);
                         }
                     }
                     _ => {}
@@ -146,6 +150,116 @@ mod test {
                 atom_end: 4
             }),
             mol.bond_with_idx(4)
+        );
+    }
+
+    #[test]
+    fn parse_bicyclohexyl() {
+        let parser = SmilesParser {};
+        let mol = parser.parse("c1ccccc1c2ccccc2");
+
+        assert_eq!(12, mol.num_atoms());
+        assert_eq!(13, mol.num_bonds());
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(0));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(1));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(2));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(3));
+        assert_eq!(Some(&Atom { number: 6 }), mol.atom_with_idx(4));
+
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 0,
+                atom_end: 1
+            }),
+            mol.bond_with_idx(0)
+        );
+
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 1,
+                atom_end: 2
+            }),
+            mol.bond_with_idx(1)
+        );
+
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 2,
+                atom_end: 3
+            }),
+            mol.bond_with_idx(2)
+        );
+
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 3,
+                atom_end: 4
+            }),
+            mol.bond_with_idx(3)
+        );
+
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 4,
+                atom_end: 5
+            }),
+            mol.bond_with_idx(4)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 0,
+                atom_end: 5
+            }),
+            mol.bond_with_idx(5)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 5,
+                atom_end: 6
+            }),
+            mol.bond_with_idx(6)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 6,
+                atom_end: 7
+            }),
+            mol.bond_with_idx(7)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 7,
+                atom_end: 8
+            }),
+            mol.bond_with_idx(8)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 8,
+                atom_end: 9
+            }),
+            mol.bond_with_idx(9)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 9,
+                atom_end: 10
+            }),
+            mol.bond_with_idx(10)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 10,
+                atom_end: 11
+            }),
+            mol.bond_with_idx(11)
+        );
+        assert_eq!(
+            Some(&Bond {
+                atom_start: 6,
+                atom_end: 11
+            }),
+            mol.bond_with_idx(12)
         );
     }
 }
